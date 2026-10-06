@@ -1,6 +1,6 @@
 # Gap Analysis Service
 
-Microservicio FastAPI que genera reportes de compatibilidad entre el perfil profesional de un usuario y una vacante almacenada por Job Discovery.
+Es un microservicio FastAPI que genera reportes de compatibilidad entre el perfil profesional de un usuario y una vacante almacenada por Job Discovery.
 
 El servicio analiza el título y `description_snippet` de la oferta con Groq cuando `GROQ_API_KEY` está configurada. La respuesta del LLM se limita al catálogo de habilidades local y el porcentaje final se calcula de forma determinista. Si Groq falla o excede su cuota, se usa automáticamente la estrategia por reglas.
 
