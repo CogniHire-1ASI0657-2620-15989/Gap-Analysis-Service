@@ -4,13 +4,17 @@ from app.application.ports.identity_profile_client import CandidateProfile, Iden
 
 
 class IdentityServiceClient(IdentityProfileClient):
-    def __init__(self, base_url: str):
+    def __init__(self, base_url: str, internal_api_key: str):
         self._base_url = base_url.rstrip("/")
+        self._internal_api_key = internal_api_key
 
     async def get_job_profile(self, user_id: int) -> CandidateProfile:
         try:
-            async with httpx.AsyncClient(timeout=httpx.Timeout(1.0)) as client:
-                response = await client.get(f"{self._base_url}/api/v1/internal/users/{user_id}/job-profile")
+            async with httpx.AsyncClient(timeout=httpx.Timeout(30.0)) as client:
+                response = await client.get(
+                    f"{self._base_url}/api/v1/internal/users/{user_id}/job-profile",
+                    headers={"X-Internal-Api-Key": self._internal_api_key},
+                )
             if response.status_code == 404:
                 raise ValueError("User profile not found.")
             response.raise_for_status()

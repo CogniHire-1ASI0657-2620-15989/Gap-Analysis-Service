@@ -38,8 +38,12 @@ def get_gap_analysis_command_service(session: AsyncSession) -> DefaultGapAnalysi
     settings = get_settings()
     llm_skill_extractor = GroqLlmSkillExtractor(settings.groq_api_key, settings.groq_model) if settings.groq_api_key else None
     return DefaultGapAnalysisCommandService(
-        profile_client=IdentityServiceClient(settings.identity_service_url),
-        job_client=JobDiscoveryServiceClient(settings.job_discovery_service_url, settings.gateway_user_id_header),
+        profile_client=IdentityServiceClient(settings.identity_service_url, settings.internal_api_key),
+        job_client=JobDiscoveryServiceClient(
+            settings.job_discovery_service_url,
+            settings.gateway_user_id_header,
+            settings.internal_api_key,
+        ),
         strategy=RuleBasedSkillStrategy(),
         repository=SQLAlchemyGapReportRepository(session),
         skill_catalog_repository=SQLAlchemySkillCatalogRepository(session),
