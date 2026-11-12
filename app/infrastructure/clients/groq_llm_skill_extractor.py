@@ -5,6 +5,7 @@ import httpx
 from app.application.ports.job_offer_client import JobOffer
 from app.application.ports.llm_skill_extractor import LlmSkillExtractor, LlmUnavailable
 from app.domain.model.entities.skill_definition import SkillDefinition
+from app.observability import outbound_headers
 
 
 class GroqLlmSkillExtractor(LlmSkillExtractor):
@@ -45,7 +46,11 @@ class GroqLlmSkillExtractor(LlmSkillExtractor):
         }
         try:
             async with httpx.AsyncClient(timeout=httpx.Timeout(3.0)) as client:
-                response = await client.post(self._URL, headers={"Authorization": f"Bearer {self._api_key}"}, json=payload)
+                response = await client.post(
+                    self._URL,
+                    headers=outbound_headers({"Authorization": f"Bearer {self._api_key}"}),
+                    json=payload,
+                )
             response.raise_for_status()
             content = response.json()["choices"][0]["message"]["content"]
             extracted = json.loads(content)["required_skills"]
