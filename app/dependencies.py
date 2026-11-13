@@ -1,4 +1,5 @@
 from collections.abc import AsyncGenerator
+from functools import lru_cache
 
 from fastapi import HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,6 +10,8 @@ from app.infrastructure.clients.identity_service_client import IdentityServiceCl
 from app.infrastructure.clients.job_discovery_service_client import JobDiscoveryServiceClient
 from app.infrastructure.clients.groq_llm_skill_extractor import GroqLlmSkillExtractor
 from app.infrastructure.configuration.settings import get_settings
+from app.infrastructure.cache.redis_json_cache import RedisJsonCache
+from app.infrastructure.messaging.gap_report_publisher import GapReportPublisher
 from app.infrastructure.matching.rule_based_skill_strategy import RuleBasedSkillStrategy
 from app.infrastructure.persistence.sqlalchemy.database import get_session
 from app.infrastructure.persistence.sqlalchemy.repositories.sqlalchemy_gap_report_repository import SQLAlchemyGapReportRepository
@@ -18,6 +21,16 @@ from app.infrastructure.persistence.sqlalchemy.repositories.sqlalchemy_skill_cat
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     async for session in get_session():
         yield session
+
+
+@lru_cache
+def get_redis_cache() -> RedisJsonCache:
+    return RedisJsonCache(get_settings().redis_url)
+
+
+@lru_cache
+def get_gap_report_publisher() -> GapReportPublisher:
+    return GapReportPublisher(get_settings().rabbitmq_url)
 
 
 def get_current_user_id(request: Request) -> int:

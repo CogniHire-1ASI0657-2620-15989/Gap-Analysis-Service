@@ -4,6 +4,7 @@ from secrets import compare_digest
 from fastapi import FastAPI, Request
 
 from app.infrastructure.configuration.settings import get_settings
+from app.dependencies import get_gap_report_publisher, get_redis_cache
 from app.interfaces.rest.controller.gap_analysis_controller import router as gap_reports_router
 from app.observability import install_observability, problem_response
 
@@ -11,7 +12,11 @@ from app.observability import install_observability, problem_response
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     get_settings()
-    yield
+    try:
+        yield
+    finally:
+        await get_gap_report_publisher().close()
+        await get_redis_cache().close()
 
 
 app = FastAPI(

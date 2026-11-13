@@ -4,6 +4,7 @@ WORKDIR /app
 COPY requirements.txt alembic.ini ./
 COPY alembic ./alembic
 COPY app ./app
+COPY tests ./tests
 RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 8000
